@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+venv/
+.venv/
+tmp/
+*.mp3
+*.wav
+.git
+.idea/
+.vscode/
