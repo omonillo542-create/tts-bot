@@ -11,6 +11,7 @@ import logging
 import subprocess
 import tempfile
 import uuid
+import json
 from pathlib import Path
 from dotenv import load_dotenv
 import imageio_ffmpeg
@@ -70,6 +71,8 @@ class Flow(StatesGroup):
 UZBEK_VOICES = {
     "🧔 Erkak (Rasmiy)": "44ad146afad04e4e99a7b98b8f97106f",
     "👨 Erkak (Tabiiy)": "fef226d2978a42d5b542e7577134f7b2",
+    # Qo'shimcha: ravon, o'zbek uslubidagi ovoz — agar keyinchalik o'zgartirilsa ID-ni yangilang
+    "🧔 Qara (Ravon)": "fef226d2978a42d5b542e7577134f7b2",
 }
 
 FEMALE_VOICES = {
@@ -190,12 +193,13 @@ async def text_to_speech(text: str, voice_id: str | None = None) -> bytes | None
     if voice_id and voice_id != "default":
         payload["voice"] = voice_id
 
+    # Qo'shimcha prosodiyalar: o'zbek tilida ravon talaffuz uchun sozlamalar
     payload["provider"] = {
         "options": {
             "fish-audio": {
                 "normalize": True,
                 "latency": "normal",
-                "prosody": {"speed": 1.0, "normalize_loudness": True},
+                "prosody": {"speed": 0.96, "normalize_loudness": True},
             }
         }
     }
@@ -309,11 +313,6 @@ async def apply_grandpa_effect(audio_bytes: bytes) -> bytes | None:
                     p.unlink()
             except Exception:
                 pass
-
-
-# =============================================
-# STT: GEMINI (lokal Whisper o'chirilgan)
-# =============================================
 
 
 # =============================================
@@ -448,6 +447,88 @@ async def gemini_analyze_script(script_text: str) -> str | None:
     return await gemini_chat(script_text, system_prompt)
 
 
+async def gemini_extract_roles(script_text: str) -> list | None:
+    """Senariydan rollarni tuzilgan JSON formatda ajratib beradi.
+    Javob quyidagi formatda JSON bo'lishi kerak:
+    {"roles": [{"name": "Ali", "description": "...", "sample_line": "..."}, ...]}
+    """
+    system_prompt = (
+        "Siz senariydan rollarni aniqlovchi yordamchisiz.\n"
+        "Foydalanuvchining senariy matnini olasiz. Iltimos, faqat JSON formatida javob bering.\n"
+        "JSON format: {\"roles\": [{\"name\": \"Ism\", \"description\": \"Qahramon xarakteri\", \"sample_line\": \"Bir misol dialog yoki ibora\"}, ...]}\n"
+        "Agar rollar topilmasa, qaytaring {\"roles\": []}."
+    )
+    resp = await gemini_chat(script_text, system_prompt)
+    if not resp:
+        return None
+    try:
+        # Ba'zan model javobida kichik izohlar bo'lishi mumkin — JSON ni tanlab olamiz
+        start = resp.find('{')
+        end = resp.rfind('}')
+        json_text = resp[start:end+1] if start != -1 and end != -1 else resp
+        data = json.loads(json_text)
+        roles = data.get('roles', [])
+        return roles
+    except Exception as e:
+        logger.error(f"Role extraction xatosi: {e} — javob: {resp}")
+        return None
+
+
+async def generate_voices_for_script(message: Message, script_text: str) -> None:
+    """Senariydagi rollar bo'yicha ovozli fayllar yaratadi va yuboradi.
+    Bu funksiya foydalanuvchi aralashuvisiz tayyorlaydi: ro'llarga mos ovozlar tanlab,
+    qisqa misol satrlarni TTS orqali ovozga aylantiradi.
+    """
+    processing = await message.answer("🎭 Senariydan rollar olinmoqda va ovozlar tayyorlanmoqda — bir necha soniya kuting...")
+    roles = await gemini_extract_roles(script_text)
+    if roles is None:
+        await processing.edit_text("❌ Rollarni aniqlashda xatolik yuz berdi.")
+        return
+
+    if not roles:
+        await processing.edit_text("⚠️ Rollar topilmadi. Iltimos, senariyni aniqroq yuboring.")
+        return
+
+    # Oddiy algo: agar roll nomida 'ona' yoki 'ayol' bo'lsa ayol ovoz, 'keksa' yoki 'grandpa' bo'lsa trend grandpa,
+    # aks holda erkak yoki default ovoz tanlaymiz. Rotatsion tanlov.
+    male_pool = list(UZBEK_VOICES.values()) + list(MALE_VOICES.values())
+    female_pool = list(FEMALE_VOICES.values())
+    trend_pool = list(TREND_VOICES.values())
+
+    sent_any = False
+    for i, r in enumerate(roles):
+        name = r.get('name', f'Rol_{i+1}')
+        sample = r.get('sample_line') or r.get('description') or f"Salom, men {name}."
+
+        # tanlash qoidasi
+        lname = name.lower()
+        if 'ona' in lname or 'ayol' in lname or 'qiz' in lname or 'mama' in lname:
+            voice_id = female_pool[i % len(female_pool)] if female_pool else DEFAULT_VOICE
+        elif 'grandpa' in lname or 'keksa' in lname or 'bobo' in lname or 'aka' in lname:
+            voice_id = trend_pool[i % len(trend_pool)] if trend_pool else DEFAULT_VOICE
+        else:
+            voice_id = male_pool[i % len(male_pool)] if male_pool else DEFAULT_VOICE
+
+        # Matnni ovozga mos holga keltirish
+        prepared = await improve_prompt(sample, mode='tts')
+        audio = await text_to_speech(prepared, voice_id)
+        if audio:
+            sent_any = True
+            audio_file = BufferedInputFile(audio, filename=f"{name.replace(' ', '_')}.mp3")
+            try:
+                await message.answer_voice(voice=audio_file, caption=f"🎭 {name}: {prepared[:120]}")
+            except Exception:
+                # Agar voice yuborishda muammo bo'lsa oddiy fayl yuboramiz
+                await message.answer_document(document=audio_file, caption=f"🎭 {name}: {prepared[:120]}")
+        else:
+            logger.warning(f"Ovoz yaratilmadi: {name}")
+
+    if sent_any:
+        await processing.edit_text("✅ Rollar uchun ovozlar tayyorlandi va yuborildi.")
+    else:
+        await processing.edit_text("❌ Ovozlarni yaratishda xatolik — API kalitlarini tekshiring.")
+
+
 async def gemini_bot_help(user_message: str) -> str | None:
     """Bot haqida savollarga javob beradi."""
     system_prompt = (
@@ -490,8 +571,7 @@ async def gemini_stt(audio_bytes: bytes, mime_type: str = "audio/ogg") -> str | 
                     "- Boshqa hech narsa yozmang (izoh, tushuntirish kerak emas)"
                 )}
             ]
-        }]
-    }
+        }]}
 
     try:
         async with aiohttp.ClientSession() as session:
@@ -531,27 +611,27 @@ async def cmd_start(message: Message, state: FSMContext):
     user_data[uid] = {"voice": DEFAULT_VOICE}
     await state.clear()
 
+    # Yangi oqim: bot avvalo o'zini tanishtiradi va foydalanuvchidan nima kerakligini so'raydi.
     await message.answer(
-        "🎙️ <b>Ovoz Bot'ga xush kelibsiz!</b>\n\n"
-        "Men ikkala yo'nalishda ishlayman:\n"
-        "1️⃣ <b>Matn → Ovoz</b> — yozgan matningizni ovozli xabar qilaman\n"
-        "2️⃣ <b>Ovoz → Matn</b> — ovozli xabaringizni matnga aylantiraman\n\n"
-        "Avval <b>ovozni tanlang</b> (matn → ovoz rejimi uchun):\n",
+        "🎙️ <b>Salom! Men Ovoz Botman — sizga matnni ovozga aylantirish, ovozdan matnga aylantirish,\n"
+        "va senariylar uchun rollar bo'yicha ovozlar tayyorlashda yordam beraman.</b>\n\n"
+        "Hozir nima qilmoqchisiz? Qisqacha yozing — men sizga yordam beraman.\n\n"
+        "(Agar ovoz tanlash yoki boshqa rejimlar kerak bo'lsa, keyin /start ni qayta bosing.)",
         parse_mode=ParseMode.HTML,
-        reply_markup=voice_category_keyboard(),
     )
+    # Foydalanuvchining erkin so'rovini AI yordamchi holatida qabul qilamiz
+    await state.set_state(Flow.ai_chat)
 
 
 @dp.message(Command("help"))
 async def cmd_help(message: Message):
     await message.answer(
         "ℹ️ <b>Yo'riqnoma</b>\n\n"
-        "1️⃣ /start — boshlash, ovoz tanlash\n"
-        "2️⃣ Rejimni tanlang:\n"
-        "   • 1️⃣ Matn → Ovoz (matn yozasiz, ovoz olasiz)\n"
-        "   • 2️⃣ Ovoz → Matn (ovoz yuborasiz, matn olasiz)\n\n"
-        "⚠️ Maksimal matn: ~3000 belgi\n"
-        "⚠️ Maksimal ovoz: 5 daqiqa",
+        "Bot quyidagilarni qiladi:\n"
+        "1️⃣ Matn → Ovoz — matnni ovozga aylantiradi\n"
+        "2️⃣ Ovoz → Matn — ovozli xabaringizni matnga aylantiradi\n"
+        "3️⃣ Senariy tahlili va rollar uchun ovozlar tayyorlash\n\n"
+        "To'liq imkoniyatlar uchun /start ni bosing.",
         parse_mode=ParseMode.HTML,
     )
 
@@ -876,6 +956,10 @@ async def script_analysis_handler(message: Message, state: FSMContext):
             await processing_msg.edit_text(
                 "❌ Tahlilda xatolik. Qayta urinib ko'ring."
             )
+
+        # Foydalanuvchi aralashuvisiz: avtomatik ravishda rollar asosida ovozlar yaratishga urinaymiz.
+        await message.answer("🔄 Men hozir senariydan rollarni aniqlab, har bir rol uchun qisqa ovoz namunalarini tayyorlayman. Iltimos kuting...")
+        await generate_voices_for_script(message, text)
 
     except Exception as e:
         logger.error(f"Senariy tahlili xatosi: {e}")
