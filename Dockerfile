@@ -1,4 +1,3 @@
-# Dockerfile to run the Telegram TTS bot
 FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1
@@ -9,12 +8,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy app
+# Copy the full project first so any referenced requirements files are present
 COPY . .
 
-# Use the same start command as Procfile
+# Install Python dependencies (root requirements can reference tts-bot/requirements.txt)
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Start the bot
 CMD ["python", "tts-bot/bot.py"]
