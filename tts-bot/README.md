@@ -5,23 +5,50 @@ O'zbek tilidagi AI yordamchi Telegram bot: matnni ovozga aylantirish, ovozni mat
 ## ✨ Imkoniyatlar
 
 - 🎛 **Professional UI** — bosh menyu, pastki doimiy tugmalar, ichki menyular
-- 🗣 **Ovoz katalogi (14 ta ovoz)** — har birini namuna bilan eshitib tanlang
+- 🗣 **Ovoz katalogi (22 ta ovoz)** — AI (Gemini/OpenAI) + Kokoro + Fish, namuna bilan
+- 🧠 **AI TTS** — Gemini 2.5 Flash TTS / OpenAI gpt-4o-mini-tts (realistik ovoz)
 - 📊 **Statistika** — bugungi/jami so'rovlar, tarix hajmi
 - 📚 **Tarix** — har bir eski matnni bir tushish bilan qayta ovozga aylantiring
 - 🧠 **Rejimlar** — Matn→Ovoz, Ovoz→Matn, Keksa, Senariy yoki AI avtomatik
-- 🇺🇿 **Fish Audio + o'zbekcha** — o'zbek matn avval **fonetik ko'rinishga** o'tkaziladi
-  (lotin → kirill, raqamlar → so'z), shuning uchun Fish ham o'zbekchani to'g'ri talaffuz qiladi
-- ⏱ **Fish Audio timeout'lar** — muddat oshirilgan, qayta urinish va zaxira model qo'shilgan
-- 🗣 **TTS (matn → ovoz)** — Edge TTS (bepul) asosiy dvigatel; Kokoro, Fish Audio fallback
-- 🎤 **STT (ovoz → matn)** — Gemini bilan o'zbekcha transkripsiya
+- ⏱ **Uzun timeout'lar** — har bir dvigatel uchun alohida vaqt, qayta urinish, zaxira model
+- 🗣 **TTS (matn → ovoz)** — 5 ta dvigatel zanjiri
+- 🎤 **STT (ovoz → matn)** — Gemini, zaxira: lokal faster-whisper
 - 🎭 **Senariy** — qahramonlarni ajratib, har biriga alohida ovoz
 - 👴 **Grandpa effekti** — FFmpeg bilan keksa odam ovozi
-- 💬 **AI suhbat** — Gemini 3.5 Flash Lite
-- ⚙️ **Sozlamalar** — til (uz/ru/en), ovoz (erkak/ayol), tezlik (sekin/normal/tez)
+- 💬 **AI suhbat** — OpenRouter (Llama 3.3 70B) → Gemini → kalit so'z
 - 📄 **Fayl o'qish** — .txt, .pdf, .docx (10 MB gacha)
 - 🚀 **Inline rejimi** — har qanday chatda `@mp3speak_bot matn` → ovoz xabari
 - 📈 **Kunlik limit** — `DAILY_LIMIT` (.env da sozlanadi, 0 = cheklovsiz)
 - 👑 **Admin panel** (`/admin`) — statistika va broadcast (faqat `ADMIN_IDS`)
+
+## 🔊 TTS zanjiri (birinchi ishga tushadigan)
+
+| # | Dvigatel | Narx | Izoh |
+|---|---|---|---|
+| 1 | **AI TTS** (Gemini / OpenAI) | bepul / to'lovli | Eng realistik ovoz |
+| 2 | **Edge TTS** | **bepul, limitsiz, kalitsiz** | `uz-UZ-SardorNeural` / `uz-UZ-MadinaNeural` |
+| 3 | **Kokoro** | bepul | HF Space, ba'zan sekin |
+| 4 | **Fish Audio** | OpenRouter | kirill moslash → to'g'ri o'zbek talaffuzi |
+| 5 | **gTTS** | bepul | oxirgi zaxira (faqat qo'llab-quvvatlanadigan tillar) |
+
+> **Muhim:** OpenRouter'da **kunlik free-model limiti** (429) va **$0.50 audio balansi**
+> talabi bo'lishi mumkin. Shuning uchun Edge TTS birinchi zaxira sifatida turibdi —
+> u **kalit va limit talab qilmaydi**. Fish Audio'ni `fish-audio/s2.1-pro` (to'lovli)
+> orqali ishlating, `s2.1-pro-free` tezda 429 beradi.
+
+## 🧠 LLM zanjiri
+
+OpenRouter (`meta-llama/llama-3.3-70b-instruct`) → Gemini → kalit so'z fallback.
+
+> Eski `nvidia/nemotron-3-super-120b-a12b:free` modeli **kunlik limit** sababli
+> 429 beradi — shuning uchun almashtirilgan.
+
+## 🎤 STT zanjiri
+
+Gemini (AI Studio API key) → lokal **faster-whisper** (PyAV patch bilan) → None.
+
+> `MIYYA_API_KEY` **AI Studio'dan olingan `AIza...` kaliti** bo'lishi kerak.
+> OAuth token (`AQ....`) Gemini API da **401** beradi.
 
 ## 🛠 O'rnatish
 
