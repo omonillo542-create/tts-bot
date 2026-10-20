@@ -254,8 +254,8 @@ FISH_SPEEDS = {
 }
 
 LANG_LABELS = {"uz": "🇺🇿 O'zbek", "ru": "🇷🇺 Rus", "en": "🇬🇧 Ingliz"}
-GENDER_LABELS_UI = {"male": "— Erkak", "female": "— Ayol"}
-SPEED_LABELS = {"slow": "— Sekin", "normal": "— Normal", "fast": "— Tez"}
+GENDER_LABELS_UI = {"male": "🧔 Erkak", "female": "👩 Ayol"}
+SPEED_LABELS = {"slow": "🐢 Sekin", "normal": "🚶 Normal", "fast": "⚡ Tez"}
 
 # --- Logger ---
 logging.basicConfig(level=logging.INFO)
@@ -280,28 +280,28 @@ class Flow(StatesGroup):
 
 # --- Kokoro TTS ovozlari (asosiy) ---
 KOKORO_MALE_VOICES = {
-    "— Erkak (Rasmiy)": "am_michael",
-    "— Erkak (Tabiiy)": "am_liam",
-    "— Erkak (Chuqur)": "am_adam",
-    "— Erkak (Do'stona)": "am_eric",
+    "🧔 Erkak (Rasmiy)": "am_michael",
+    "👨 Erkak (Tabiiy)": "am_liam",
+    "🧑 Erkak (Chuqur)": "am_adam",
+    "🧔 Erkak (Do'stona)": "am_eric",
 }
 
 KOKORO_FEMALE_VOICES = {
-    "— Ayol (Tabiiy)": "af_heart",
-    "— Ayol (Expressiv)": "af_bella",
-    "— Ayol (Sokin)": "af_nicole",
-    "— Ayol (Suhbatdosh)": "af_sarah",
+    "👩 Ayol (Tabiiy)": "af_heart",
+    "👩‍🦰 Ayol (Expressiv)": "af_bella",
+    "🧘 Ayol (Sokin)": "af_nicole",
+    "👩 Ayol (Suhbatdosh)": "af_sarah",
 }
 
 KOKORO_CHILD_VOICES = {
-    "— Bola (Yosh)": "am_puck",
-    "— Bola (Ilmom)": "af_nova",
+    "🧒 Bola (Yosh)": "am_puck",
+    "👶 Bola (Ilmom)": "af_nova",
 }
 
 KOKORO_GRANDPA_VOICES = {
-    "— Keksa (Chuqur)": "am_echo",
-    "— Keksa (Barqaror)": "am_fenrir",
-    "— Keksa (Hikoyachi)": "bm_george",
+    "👴 Keksa (Chuqur)": "am_echo",
+    "👴 Keksa (Barqaror)": "am_fenrir",
+    "👴 Keksa (Hikoyachi)": "bm_george",
 }
 
 KOKORO_GENDER_POOLS = {
@@ -314,33 +314,33 @@ KOKORO_DEFAULT = KOKORO_DEFAULT_VOICE  # af_heart
 
 # --- Fish Audio ovozlari (fallback) ---
 UZBEK_VOICES = {
-    "— Erkak (Rasmiy)": "44ad146afad04e4e99a7b98b8f97106f",
-    "— Erkak (Tabiiy)": "fef226d2978a42d5b542e7577134f7b2",
+    "🧔 Erkak (Rasmiy)": "44ad146afad04e4e99a7b98b8f97106f",
+    "👨 Erkak (Tabiiy)": "fef226d2978a42d5b542e7577134f7b2",
 }
 
 FEMALE_VOICES = {
-    "— Sarah (Yosh, jonli)": "933563129e564b19a115bedd57b7406a",
-    "— Laura (Ishonchli)": "e3cd384158934cc9a01029cd7d278634",
-    "— Selene (Sokin, meditativ)": "b347db033a6549378b48d00acb0d06cd",
-    "— Hannah (Suhbatdosh)": "412a7bebb63345b6becf50f9da63ed5b",
+    "👩 Sarah (Yosh, jonli)": "933563129e564b19a115bedd57b7406a",
+    "👩‍🦰 Laura (Ishonchli)": "e3cd384158934cc9a01029cd7d278634",
+    "🧘 Selene (Sokin, meditativ)": "b347db033a6549378b48d00acb0d06cd",
+    "👩 Hannah (Suhbatdosh)": "412a7bebb63345b6becf50f9da63ed5b",
 }
 
 MALE_VOICES = {
-    "— Ethan (Tushuntiruvchi)": "2ce3de29febb43d7a4a85a63085e1da1",
-    "— Adrian (Barqaror)": "7d44c98f619c4e98823a84ed60122f9f",
+    "🧑 Ethan (Tushuntiruvchi)": "2ce3de29febb43d7a4a85a63085e1da1",
+    "🧔 Adrian (Barqaror)": "7d44c98f619c4e98823a84ed60122f9f",
 }
 
 CHILD_VOICES = {
-    "— Bolacha (Neutal)": "4e407b98cb034f74b3863ec33c567c83",
-    "— Kichkina bola": "051eccd6d8894155a0c544b8e5c0fd72",
-    "— O'g'il bola": "501f126749464eef92d30fa913da1e8e",
-    "— Yosh bola (Playful)": "c0d6e010f2bb4198b98b78fb796e1b36",
+    "🧒 Bolacha (Neutal)": "4e407b98cb034f74b3863ec33c567c83",
+    "👶 Kichkina bola": "051eccd6d8894155a0c544b8e5c0fd72",
+    "👦 O'g'il bola": "501f126749464eef92d30fa913da1e8e",
+    "🧒 Yosh bola (Playful)": "c0d6e010f2bb4198b98b78fb796e1b36",
 }
 
 TREND_VOICES = {
-    "— Grandpa Spencer (Trend)": "245aac5cae7640d88a0e81da89c1e0f3",
-    "— Grandpa (Hikoyachi)": "b0f79e4bac084142a2ca8266bd959ae5",
-    "— Grandpa (Faktlar, PSA)": "697a707402bf47e9940b95a5f85fbe94",
+    "👴 Grandpa Spencer (Trend)": "245aac5cae7640d88a0e81da89c1e0f3",
+    "👴 Grandpa (Hikoyachi)": "b0f79e4bac084142a2ca8266bd959ae5",
+    "👴 Grandpa (Faktlar, PSA)": "697a707402bf47e9940b95a5f85fbe94",
 }
 
 GENDER_POOLS = {
@@ -349,7 +349,7 @@ GENDER_POOLS = {
     "child": CHILD_VOICES,
 }
 
-DEFAULT_VOICE = UZBEK_VOICES["— Erkak (Rasmiy)"]  # Fish Audio fallback ovozi
+DEFAULT_VOICE = UZBEK_VOICES["🧔 Erkak (Rasmiy)"]  # Fish Audio fallback ovozi
 
 GENDER_LABELS = {"male": "erkak", "female": "ayol", "child": "bola"}
 
@@ -409,7 +409,7 @@ def clip(text: str, limit: int = TG_MSG_LIMIT) -> str:
     text = text or ""
     if len(text) <= limit:
         return text
-    return text[: limit - 1].rstrip() + "—"
+    return text[: limit - 1].rstrip() + "…"
 
 
 def clean_ai_text(text: str) -> str:
@@ -1746,7 +1746,7 @@ Muhim qoidalar:
 - Matn boshqa tilda bo'lsa, 'lang' shu tilni ko'rsating.
 - Foydalanuvchi o'zbekcha yozsa, 'reply'ni o'zbekcha yozing."""
 
-GRANDPA_KEYWORDS = ("grandpa", "keksa", "bobojon", "bobo ovoz", "keksa odam", "bobokhal", "—")
+GRANDPA_KEYWORDS = ("grandpa", "keksa", "bobojon", "bobo ovoz", "keksa odam", "bobokhal", "👴")
 TTS_KEYWORDS = (
     "ovozga aylantir", "ovozga chiqar", "ovozga ot", "o'qib ber", "oqib ber",
     "ovozli qil", "gapirtir", "ovoz ber", "tts", "speak", "audio qil", "ovozga utqaz",
@@ -1940,14 +1940,14 @@ GREETING_SYSTEM = (
 )
 
 DEFAULT_GREETING = (
-    "Assalomu alaykum! — Men <b>AI Ovoz Bot</b>man — sizning o'zbek tilidagi "
+    "Assalomu alaykum! 👋 Men <b>AI Ovoz Bot</b>man — sizning o'zbek tilidagi "
     "ovoz yordamchingiz.\n\n"
     "Men nima qila olaman:\n"
-    "— Matnni ovozga aylantiraman\n"
-    "— Ovozli xabaringizni matnga aylantiraman\n"
-    "— Grandpa (keksa odam) effektini qo'llayman\n"
-    "— Senariy bo'yicha har bir qahramonni alohida ovozda ovozlayman\n"
-    "— Har qanday savolga o'zbekcha javob beraman\n\n"
+    "🔊 Matnni ovozga aylantiraman\n"
+    "🎤 Ovozli xabaringizni matnga aylantiraman\n"
+    "👴 Grandpa (keksa odam) effektini qo'llayman\n"
+    "🎭 Senariy bo'yicha har bir qahramonni alohida ovozda ovozlayman\n"
+    "💬 Har qanday savolga o'zbekcha javob beraman\n\n"
     "Shunchaki yozing yoki mikrofon tugmasini bosib ovoz yuboring — "
     "men o'zim tushunib olaman. ——"
 )
@@ -1969,17 +1969,17 @@ def fallback_chat_reply(text: str) -> str:
     """Gemini umuman ishlamasa — oddiy kalit so'zli javoblar."""
     low = text.lower()
     if any(k in low for k in ("salom", "assalomu", "—", "hello", "hi")):
-        return ("Assalomu alaykum! — Men AI Ovoz Botman. Matn yozing — "
+        return ("Assalomu alaykum! 👋 Men AI Ovoz Botman. Matn yozing — "
                 "ovozga aylantiraman, yoki ovoz yuboring — matnga o'giraman.")
     if any(k in low for k in CHAT_KEYWORDS_HELP):
         return ("Men quyidagilarni qila olaman:\n"
-                "— Matn — ovoz\n"
-                "— Ovoz — matn\n"
-                "— Grandpa effekti\n"
-                "— Senariy — qahramonlar uchun alohida ovoz\n\n"
+                "🔊 Matn → ovoz\n"
+                "🎤 Ovoz → matn\n"
+                "👴 Grandpa effekti\n"
+                "🎭 Senariy → qahramonlar uchun alohida ovoz\n\n"
                 "Shunchaki matn yoki ovoz yuboring — men o'zim tushunaman. ——")
     if any(k in low for k in ("ovoz", "tts", "voice")):
-        return "Matnni yuboring — men uni ovozga aylantirib beraman. —"
+        return "Matnni yuboring — men uni ovozga aylantirib beraman. 🔊"
     return ("Kechirasiz, AI bilan aloqa vaqtincha uzildi ——. "
             "Birozdan keyin qayta yozing yoki /start bosing.")
 
@@ -2150,7 +2150,7 @@ async def do_script(message: Message, processing: Message, text: str) -> None:
         return
 
     summary_lines = "\n".join(
-        f"— {c['name']} — {GENDER_LABELS.get(c['gender'], 'erkak')} "
+        f"• {c['name']} — {GENDER_LABELS.get(c['gender'], 'erkak')} "
         f"({len(c['lines'])} ta replika)"
         for c in characters
     )
@@ -2177,7 +2177,7 @@ async def do_script(message: Message, processing: Message, text: str) -> None:
         for idx, part in enumerate(parts, start=1):
             await safe_edit(
                 processing,
-                f"— {ch['name']} ovozi yaratilmoqda ({idx}/{len(parts)})...",
+                f"⏳ {ch['name']} ovozi yaratilmoqda ({idx}/{len(parts)})...",
             )
             await typing(message)
 
@@ -2195,7 +2195,7 @@ async def do_script(message: Message, processing: Message, text: str) -> None:
                 logger.error(f"{ch['name']} uchun ovoz yaratib bo'lmadi")
                 continue
 
-            caption = f"— {ch['name']} — {voice_name}"
+            caption = f"🎭 {ch['name']} • {voice_name}"
             if len(parts) > 1:
                 caption += f" ({idx}/{len(parts)})"
             await message.answer_voice(
@@ -2206,7 +2206,7 @@ async def do_script(message: Message, processing: Message, text: str) -> None:
 
     if sent == 0:
         await safe_edit(
-            processing, "— Ovozlarni yaratib bo'lmadi. Qayta urinib ko'ring."
+            processing, "❌ Ovozlarni yaratib bo'lmadi. Qayta urinib ko'ring."
         )
         return
 
@@ -2413,7 +2413,7 @@ _user_mode: dict[int, str] = {}
 
 MODE_LABELS = {
     "auto": "AI avtomatik",
-    "tts": "Matn — Ovoz",
+    "tts": "Matn → Ovoz",
     "grandpa": "Keksa effekti",
     "script": "Senariy",
 }
@@ -2423,7 +2423,7 @@ MODE_TEXTS = {
     "grandpa": T.MODE_GRANDPA,
     "script": T.MODE_SCRIPT,
     "auto": T.MODE_AI,
-    "ai": T.MODE_AI,   # menyudagi "— AI rejimi" tugmasi
+    "ai": T.MODE_AI,   # menyudagi "🧠 AI rejimi" tugmasi
 }
 
 
@@ -2555,10 +2555,10 @@ def build_history_keyboard(history: list[str]) -> InlineKeyboardMarkup:
     for idx, text in enumerate(history):
         label = clip(text, 28) or "(bo'sh)"
         rows.append([
-            InlineKeyboardButton(text=f"— {label}", callback_data=f"hist:{idx}")
+            InlineKeyboardButton(text=f"🔊 {label}", callback_data=f"hist:{idx}")
         ])
     rows.append([
-        InlineKeyboardButton(text="— Tozalash", callback_data="menu:clear_history"),
+        InlineKeyboardButton(text="🧹 Tozalash", callback_data="menu:clear_history"),
         InlineKeyboardButton(text=T.BTN_HOME, callback_data="menu:home"),
     ])
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -2574,8 +2574,8 @@ async def home_text(uid: int) -> str:
     return (
         T.MAIN_TITLE
         + T.MAIN_SUBTITLE + "\n\n"
-        + f"— Rejim: <b>{mode}</b>\n"
-        + f"— Til: <b>{lang}</b>"
+        + f"🧠 Rejim: <b>{mode}</b>\n"
+        + f"🌍 Til: <b>{lang}</b>"
     )
 
 
@@ -2745,7 +2745,7 @@ async def voice_preview_callback(callback: CallbackQuery):
         return
 
     entry = VOICE_CATALOG[idx]
-    await callback.answer("— Namuna tayyorlanmoqda—")
+    await callback.answer("🔊 Namuna tayyorlanmoqda…")
 
     async with TTS_SEMAPHORE:
         audio = await preview_voice(entry)
@@ -2761,7 +2761,7 @@ async def voice_preview_callback(callback: CallbackQuery):
     )
     await callback.message.answer_voice(
         voice=voice_file,
-        caption=f"— <b>{entry['name']}</b>\n<i>{entry['desc']}</i>",
+        caption=f"🔊 <b>{entry['name']}</b>\n<i>{entry['desc']}</i>",
         parse_mode=ParseMode.HTML,
     )
 
@@ -2781,7 +2781,7 @@ async def voice_preview_callback(callback: CallbackQuery):
 async def history_callback(callback: CallbackQuery):
     """Tarixdagi matnni qayta ovozga aylantiradi."""
     uid = callback.from_user.id
-    await callback.answer("— Tayyorlanmoqda—")
+    await callback.answer("🔊 Tayyorlanmoqda…")
 
     try:
         idx = int(callback.data.split(":", 1)[1])
@@ -2861,8 +2861,8 @@ def build_settings_keyboard() -> InlineKeyboardMarkup:
 
 
 def _mark(label: str, code: str, current: str) -> str:
-    """Joriy tanlovni — bilan belgilaydi."""
-    return f"— {label}" if code == current else label
+    """Joriy tanlovni ✅ bilan belgilaydi."""
+    return f"✅ {label}" if code == current else label
 
 
 def build_lang_keyboard(current: str = "uz") -> InlineKeyboardMarkup:
@@ -2883,7 +2883,7 @@ def build_voice_keyboard(current: str = "male") -> InlineKeyboardMarkup:
             InlineKeyboardButton(text=_mark(T.BTN_VOICE_FEMALE, "female", current), callback_data="voice:female"),
         ],
         [
-            InlineKeyboardButton(text="— Barcha ovozlar", callback_data="menu:voices"),
+            InlineKeyboardButton(text="🗣 Barcha ovozlar", callback_data="menu:voices"),
             InlineKeyboardButton(text=T.BTN_BACK, callback_data="settings:refresh"),
         ],
     ])
@@ -3032,8 +3032,8 @@ def is_admin(user_id: int) -> bool:
 def build_admin_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="— Statistika", callback_data="admin:stats"),
-            InlineKeyboardButton(text="— Broadcast", callback_data="admin:broadcast"),
+            InlineKeyboardButton(text="📊 Statistika", callback_data="admin:stats"),
+            InlineKeyboardButton(text="📤 Broadcast", callback_data="admin:broadcast"),
         ],
     ])
 
@@ -3069,34 +3069,34 @@ async def cmd_diag(message: Message):
         return
 
     import edge_tts as _et
-    lines = [f"— <b>Diagnostics</b>", f"edge-tts: {_et.__version__}", ""]
+    lines = [f"🧪 <b>Diagnostics</b>", f"edge-tts: {_et.__version__}", ""]
 
     # 1) Edge TTS
     try:
         audio = await edge_tts_speak("Sinov.", "uz-UZ-SardorNeural", retries=0)
         lines.append(
-            f"Edge TTS: — {len(audio)} bayt" if audio else "Edge TTS: — audio yo'q"
+            f"Edge TTS: ✅ {len(audio)} bayt" if audio else "Edge TTS: ❌ audio yo'q"
         )
     except Exception as e:
-        lines.append(f"Edge TTS: — {type(e).__name__}: {str(e)[:200]}")
+        lines.append(f"Edge TTS: ❌ {type(e).__name__}: {str(e)[:200]}")
 
     # 2) Kokoro
     try:
         audio = await kokoro_tts("Sinov.")
         lines.append(
-            f"Kokoro: — {len(audio)} bayt" if audio else "Kokoro: — ishlamadi (Space uxlayapti?)"
+            f"Kokoro: ✅ {len(audio)} bayt" if audio else "Kokoro: ❌ ishlamadi (Space uxlayapti?)"
         )
     except Exception as e:
-        lines.append(f"Kokoro: — {type(e).__name__}: {str(e)[:200]}")
+        lines.append(f"Kokoro: ❌ {type(e).__name__}: {str(e)[:200]}")
 
     # 3) Fish Audio
     try:
         audio = await fish_audio_tts("Sinov.", None)
         lines.append(
-            f"Fish Audio: — {len(audio)} bayt" if audio else "Fish Audio: — ishlamadi"
+            f"Fish Audio: ✅ {len(audio)} bayt" if audio else "Fish Audio: ❌ ishlamadi"
         )
     except Exception as e:
-        lines.append(f"Fish Audio: — {type(e).__name__}: {str(e)[:200]}")
+        lines.append(f"Fish Audio: ❌ {type(e).__name__}: {str(e)[:200]}")
 
     await message.answer("\n".join(lines), parse_mode=ParseMode.HTML)
 
@@ -3123,7 +3123,7 @@ async def admin_callback(callback: CallbackQuery, state: FSMContext):
         await callback.message.edit_text(
             T.ADMIN_BROADCAST_PROMPT,
             reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="— Bekor qilish", callback_data="admin:cancel")],
+                [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="admin:cancel")],
             ]),
             parse_mode=ParseMode.HTML,
         )
@@ -3202,7 +3202,7 @@ async def voice_message_handler(message: Message, state: FSMContext):
         if not transcript:
             await safe_edit(
                 processing,
-                "— Ovozdan matn topilmadim.\nIltimos, aniqroq va yaqinroq gapiring.",
+                "❌ Ovozdan matn topilmadim.\nIltimos, aniqroq va yaqinroq gapiring.",
             )
             return
 
@@ -3315,7 +3315,7 @@ async def document_handler(message: Message, state: FSMContext):
 
         await safe_edit(
             processing,
-            f"— <b>{doc.file_name}</b>\n{len(text)} belgi o'qildi. Davom etilmoqda...",
+            f"📄 <b>{doc.file_name}</b>\n{len(text)} belgi o'qildi. Davom etilmoqda...",
         )
         await run_pipeline(message, text, processing)
 
@@ -3439,7 +3439,7 @@ async def inline_handler(inline_query: InlineQuery):
         await inline_query.answer(
             results=[
                 _inline_article(
-                    "— Ovozga aylantirish",
+                    "🔊 Ovozga aylantirish",
                     "Matn yozing — ovoz yaratib beraman",
                     "Misol: @mp3speak_bot Salom dunyo",
                 )
@@ -3457,7 +3457,7 @@ async def inline_handler(inline_query: InlineQuery):
         await inline_query.answer(
             results=[
                 _inline_article(
-                    "— Limit tugadi",
+                    "🚫 Limit tugadi",
                     "Bugungi limit tugadi",
                     T.ERR_DAILY_LIMIT.format(limit=DAILY_LIMIT),
                 )
