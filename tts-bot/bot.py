@@ -186,9 +186,10 @@ def _key_broken(name: str, ttl: float = 900) -> bool:
     return time.monotonic() < _broken_keys.get(name, 0)
 
 
-def _mark_broken(name: str) -> None:
-    _broken_keys[name] = time.monotonic() + 900
-    logger.warning(f"Kalit '{name}' ishlamadi — 15 daqiqa uchun o'chirildi")
+def _mark_broken(name: str, ttl: float = 900) -> None:
+    """Kalitni vaqtincha o'chirib qo'yadi (default 15 daqiqa)."""
+    _broken_keys[name] = time.monotonic() + ttl
+    logger.warning(f"Kalit '{name}' ishlamadi — {int(ttl)}s uchun o'chirildi")
 
 
 # --- Gemini / OpenAI / LLM zanjiri (OpenRouter asosiy) ---
