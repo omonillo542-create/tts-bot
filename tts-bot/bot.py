@@ -1423,25 +1423,47 @@ async def _gemini_call(contents: list, system_prompt: str | None = None,
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(
-                url, json=payload,
-                timeout=aiohttp.ClientTimeout(total=90),
-            ) as resp:
-                if resp.status != 200:
-                    error_text = await resp.text()
-                    logger.error(f"Gemini API xatosi {resp.status}: {error_text[:300]}")
+            for attempt in range(1, 4):
+                async with session.post(
+                    url, json=payload,
+                    timeout=aiohttp.ClientTimeout(total=120),
+                ) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        candidates = data.get("candidates", [])
+                        if not candidates:
+                            logger.warning("Gemini: candidates bo'sh")
+                            return None
+                        parts = candidates[0].get("content", {}).get("parts", [])
+                        chunks: list[str] = []
+                        for p in parts:
+                            # Standart matn javobi
+                            if "text" in p and p["text"]:
+                                chunks.append(p["text"])
+                            # Transcribe modellari "audioTranscription" maydonida qaytaradi
+                            elif "audioTranscription" in p:
+                                at = p.get("audioTranscription") or {}
+                                if at.get("text"):
+                                    chunks.append(at["text"])
+                        text = "".join(chunks).strip()
+                        return text or None
+
+                    error_text = (await resp.text())[:300]
+                    logger.error(f"Gemini API xatosi {resp.status}: {error_text}")
+
+                    # 503/429 — vaqtinchcha yuklama: qayta urinamiz
+                    if resp.status in (429, 503) and attempt < 3:
+                        wait = 3 * attempt
+                        logger.warning(f"Gemini: {resp.status} — {wait}s kutib qayta urinaman")
+                        await asyncio.sleep(wait)
+                        continue
+                    # 401/403 — kalit buzilgan
+                    if resp.status in (400, 401, 403):
+                        _mark_broken("gemini")
                     return None
-                data = await resp.json()
-                candidates = data.get("candidates", [])
-                if not candidates:
-                    logger.warning("Gemini: candidates bo'sh")
-                    return None
-                parts = candidates[0].get("content", {}).get("parts", [])
-                chunks = [p["text"] for p in parts if "text" in p]
-                text = "".join(chunks).strip()
-                return text or None
+        return None
     except Exception as e:
-        logger.error(f"Gemini so'rov xatosi: {e}")
+        logger.error(f"Gemini so'rov xatosi: {type(e).__name__}: {str(e)[:200]}")
         return None
 
 
