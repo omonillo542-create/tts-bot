@@ -1037,6 +1037,44 @@ async def openai_tts(text: str, voice: str = "alloy", lang: str = "uz") -> bytes
 # =============================================
 
 
+def validate_keys() -> None:
+    """Kalitlarni tekshiradi va aniq ogohlantirish beradi."""
+    problems: list[str] = []
+
+    if not BOT_TOKEN:
+        problems.append("BOT_TOKEN yo'q!")
+    if not OPENROUTER_API_KEY:
+        problems.append("OPENROUTER_API_KEY yo'q — Fish Audio va LLM ishlamaydi")
+    if not GEMINI_API_KEY:
+        problems.append(
+            "MIYYA_API_KEY yo'q — Gemini TTS/STT ishlamaydi "
+            "(Edge TTS va lokal Whisper ishlayveradi)"
+        )
+    elif not GEMINI_API_KEY.startswith("AIza"):
+        problems.append(
+            "MIYYA_API_KEY ESKI FORMATDA (AQ... boshlanadi) — "
+            "Gemini API uchun yangi 'AIza...' kaliti kerak "
+            "(https://aistudio.google.com/apikey). Hozircha AI TTS o'chiriladi."
+        )
+    if not OPENAI_API_KEY:
+        problems.append(
+            "OPENAI_API_KEY yo'q — OpenAI TTS ishlamaydi "
+            "(ixtiyoriy: Gemini yoki Edge TTS ishlaydi)"
+        )
+
+    if problems:
+        logger.warning("=== KALITLAR HAQIDA OGOHLANTIRISH ===")
+        for p in problems:
+            logger.warning("  • " + p)
+    else:
+        logger.info("Barcha kalitlar to'g'ri (AI TTS tayyor)")
+
+    # Noto'g'ri Gemini kaliti bo'lsa — uni o'chirib qo'yamiz (401 har bir
+    # so'rovda takrorlanmasligi uchun)
+    if GEMINI_API_KEY and not GEMINI_API_KEY.startswith("AIza"):
+        _mark_broken("gemini")
+
+
 async def synthesize_speech(
     text: str,
     lang: str = "uz",
@@ -3487,6 +3525,9 @@ async def main():
 
     # Bazani ishga tushiramiz
     await db.init_db()
+
+    # Kalitlarni tekshirish (noto'g'ri kalit — aniq ogohlantirish)
+    validate_keys()
 
     bot = Bot(token=BOT_TOKEN)
     logger.info("AI Ovoz Bot ishga tushdi!")
