@@ -16,6 +16,7 @@ tmp/
 bot_local.log
 bot_local.log.err
 bot_startup.log
+bot_startup.log.err
 
 # Baza (foydalanuvchi ma'lumotlari — commit qilinmaydi)
 bot.db
