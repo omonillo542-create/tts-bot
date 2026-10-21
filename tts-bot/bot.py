@@ -1094,6 +1094,95 @@ def validate_keys() -> None:
         logger.info("Barcha kalitlar to'g'ri (AI TTS tayyor)")
 
 
+async def audio_to_mp3(data: bytes) -> bytes | None:
+    """Audio (wav/ogg/mp3) → MP3.
+
+    Telegram'da MP3 "musiqa" (audio) sifatida yuboriladi: ▶️ tugmasi,
+    metadata (nom, ijrochi) va faylni yuklab olish imkoniyati bo'ladi.
+    """
+    uid = uuid.uuid4().hex[:12]
+    in_path = TMP_DIR / f"mp3_in_{uid}.bin"
+    out_path = TMP_DIR / f"mp3_out_{uid}.mp3"
+    try:
+        in_path.write_bytes(data)
+        cmd = [
+            FFMPEG_PATH, "-y", "-hide_banner", "-loglevel", "error",
+            "-i", str(in_path),
+            "-vn", "-ac", "1", "-ar", "44100", "-b:a", "128k",
+            str(out_path),
+        ]
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        _, stderr = await proc.communicate()
+        if proc.returncode != 0 or not out_path.exists() or out_path.stat().st_size == 0:
+            logger.warning(
+                f"MP3 konversiya xatosi: {stderr.decode(errors='replace')[:200]}"
+            )
+            return None
+        return out_path.read_bytes()
+    except Exception as e:
+        logger.error(f"MP3 konversiya xatosi: {e}")
+        return None
+    finally:
+        for p in (in_path, out_path):
+            try:
+                if p.exists():
+                    p.unlink()
+            except OSError:
+                pass
+
+
+def _guess_audio_name(data: bytes) -> str:
+    """Audio formatini aniqlab, fayl nomi qaytaradi."""
+    if data[:4] == b"RIFF":
+        return "AI_Ovoz_Bot.wav"
+    if data[:4] == b"OggS":
+        return "AI_Ovoz_Bot.ogg"
+    if data[:3] == b"ID3" or data[:2] in (b"\xff\xfb", b"\xff\xf3", b"\xff\xf2"):
+        return "AI_Ovoz_Bot.mp3"
+    return "AI_Ovoz_Bot.mp3"
+
+
+async def send_as_audio(
+    message: Message,
+    audio: bytes,
+    caption: str = "",
+    title: str = "",
+    performer: str = "AI Ovoz Bot",
+    parse_mode: str | None = None,
+) -> None:
+    """Ovozni Telegram'da "musiqa" (audio fayl) sifatida yuboradi.
+
+    Voice xabari emas — MP3 audio: ▶️ tugmasi, metadata (nom, ijrochi)
+    va faylni yuklab olish (saqlash) imkoniyati bo'ladi.
+    """
+    mp3 = await audio_to_mp3(audio)
+    data = mp3 or audio
+    name = "AI_Ovoz_Bot.mp3" if mp3 else _guess_audio_name(audio)
+    label = (title or caption or "AI Ovoz Bot").strip()[:120]
+    try:
+        await message.answer_audio(
+            BufferedInputFile(data, filename=name),
+            filename=name,
+            title=label,
+            performer=performer,
+            caption=caption or None,
+            parse_mode=parse_mode,
+        )
+    except Exception as e:
+        logger.error(f"Audio yuborish xatosi: {type(e).__name__}: {e}")
+        # Zaxira: voice xabari sifatida
+        try:
+            await message.answer_voice(
+                BufferedInputFile(data, filename="voice.mp3"), caption=caption or None
+            )
+        except Exception as e2:
+            logger.error(f"Voice yuborish xatosi ham: {e2}")
+
+
 async def synthesize_speech(
     text: str,
     lang: str = "uz",
@@ -2082,19 +2171,16 @@ async def do_tts(message: Message, processing: Message, text: str, intent: dict)
             logger.error(f"Bo'lak {idx}/{len(chunks)} uchun ovoz yaratib bo'lmadi")
             continue
 
-        # MP3 -> OGG (Opus) konversiya (Telegram voice uchun)
-        ogg = await mp3_to_ogg(audio)
-        if ogg:
-            voice_file = BufferedInputFile(ogg, filename="voice.ogg")
-        else:
-            # Konversiya ishlamasa — MP3 sifatida yuboramiz
-            voice_file = BufferedInputFile(audio, filename="voice.mp3")
-
+        # MP3 -> OGG (Opus) konversiya endi kerak emas:
+        # natija "musiqa" (audio) sifatida yuboriladi
         caption = T.TTS_DONE.format(engine=engine, lang=lang.upper(), chars=len(chunk))
         if len(chunks) > 1:
             caption += f" ({idx}/{len(chunks)})"
 
-        await message.answer_voice(voice=voice_file, caption=caption)
+        # Musiqa (audio) sifatida yuborish — faylni yuklab olish mumkin
+        await send_as_audio(
+            message, audio, caption=caption, title=clip(chunk, 60)
+        )
         sent += 1
 
     await kill(processing)
@@ -2143,16 +2229,12 @@ async def do_grandpa(message: Message, processing: Message, text: str, intent: d
         logger.warning("Grandpa effekti ishlamadi, oddiy ovoz yuboriladi")
         processed = audio
 
-    # MP3 -> OGG konversiya
-    ogg = await mp3_to_ogg(processed)
-    if ogg:
-        voice_file = BufferedInputFile(ogg, filename="grandpa.ogg")
-    else:
-        voice_file = BufferedInputFile(processed, filename="grandpa_voice.mp3")
-
-    await message.answer_voice(
-        voice=voice_file,
+    # Musiqa (audio) sifatida yuborish — faylni yuklab olish mumkin
+    await send_as_audio(
+        message,
+        processed,
         caption=T.GRANDPA_DONE.format(chars=len(speak)),
+        title=clip(speak, 60),
     )
     await kill(processing)
 
@@ -2221,9 +2303,9 @@ async def do_script(message: Message, processing: Message, text: str) -> None:
             caption = f"🎭 {ch['name']} • {voice_name}"
             if len(parts) > 1:
                 caption += f" ({idx}/{len(parts)})"
-            await message.answer_voice(
-                voice=BufferedInputFile(audio, filename="voice.mp3"),
-                caption=caption,
+            # Musiqa (audio) sifatida yuborish — faylni yuklab olish mumkin
+            await send_as_audio(
+                message, audio, caption=caption, title=clip(part, 60)
             )
             sent += 1
 
@@ -2777,14 +2859,12 @@ async def voice_preview_callback(callback: CallbackQuery):
         await callback.message.answer(T.VOICE_PREVIEW_ERROR)
         return
 
-    ogg = await mp3_to_ogg(audio)
-    voice_file = (
-        BufferedInputFile(ogg, filename="preview.ogg") if ogg
-        else BufferedInputFile(audio, filename="preview.mp3")
-    )
-    await callback.message.answer_voice(
-        voice=voice_file,
+    # Musiqa (audio) sifatida yuborish — faylni yuklab olish mumkin
+    await send_as_audio(
+        callback.message,
+        audio,
         caption=f"🔊 <b>{entry['name']}</b>\n<i>{entry['desc']}</i>",
+        title=entry["name"],
         parse_mode=ParseMode.HTML,
     )
 
