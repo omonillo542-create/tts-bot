@@ -2,6 +2,30 @@
 
 O'zbek tilidagi AI yordamchi Telegram bot: matnni ovozga aylantirish, ovozni matnga aylantirish (STT), senariy bo'yicha qahramonlarga alohida ovoz berish, Grandpa effekti va AI suhbat.
 
+# 🎙️ AI Ovoz Bot (@mp3speak_ai_bot)
+
+O'zbek tilidagi AI yordamchi Telegram bot: matnni tabiiy, ifodali sun'iy ovozga aylantiradi.
+
+| | |
+|---|---|
+| **Bot** | [@mp3speak_ai_bot](https://t.me/mp3speak_ai_bot) |
+| **Telegram ID** | `8947768485` |
+| **TTS** | Gemini 3.8 Flash TTS · Edge TTS · Kokoro · Fish Audio |
+| **STT** | Gemini 3.5 Transcribe · faster-whisper |
+| **LLM** | OpenRouter (Llama 3.3 70B) → Gemini 3.8 Flash → kalit so'z |
+| **Ovozlar** | 22 ta (8 ta AI + 12 ta Kokoro + 2 ta Fish) |
+
+> **Ishga tushirish (mahalliy, bepul):**
+> ```powershell
+> cd "C:\Users\omonillo\Documents\Default Project\tts-bot"
+> venv731\Scripts\python.exe bot.py
+> ```
+> Avtomatik ishga tushish `Startup\AI_Ovoz_Bot.cmd` fayli orqali yoqilgan ✅
+
+> **Railway:** `omonillo542-create/kot` reposidan `pretty-laughter/kot` service'iga
+> deploy qilinadi. ⚠️ Free Trial'da deploylar to'xtatilgan — **Hobby plan**
+> ($5/oy) kerak yoki mahalliy ishga tushirish tavsiya etiladi.
+
 ## ✨ Imkoniyatlar
 
 - 🎛 **Professional UI** — bosh menyu, pastki doimiy tugmalar, ichki menyular
