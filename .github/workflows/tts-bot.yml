@@ -1,0 +1,50 @@
+name: AI Ovoz Bot
+
+# GitHub Actions — 24/7 bot serveri (bepul).
+# Har soat qayta ishga tushadi; avvalgi run avtomatik bekor qilinadi
+# (Telegram'da ikkita nusxa poll qilmasligi uchun).
+on:
+  schedule:
+    - cron: '7 * * * *'   # har soat 7-daqiqada UTC
+  workflow_dispatch:       # qo'lda ishga tushirish (Actions > Run workflow)
+
+# Faqat bitta run — avvalgisini bekor qilish
+concurrency:
+  group: tts-bot
+  cancel-in-progress: true
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70      # soatlik cron dan oldin tugaydi
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+          cache-dependency-path: tts-bot/requirements.txt
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install dependencies
+        run: pip install -r tts-bot/requirements.txt
+
+      - name: Run bot
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          MIYYA_API_KEY: ${{ secrets.MIYYA_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_THINKING_KEY: ${{ secrets.OPENROUTER_THINKING_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          TZ: Asia/Tashkent
+        run: |
+          cd tts-bot
+          python bot.py
