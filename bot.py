@@ -121,6 +121,17 @@ GEMINI_API_KEY = _keys_env[0] if _keys_env else None  # asosiy kalit (LLM/STT)
 # (GitHub Actions'da bu secret sifatida saqlanadi — kodga yozilmaydi)
 GEMINI_TTS_KEYS: list[str] = list(_keys_env)
 
+# TTS modellari: kvota HAR BIR MODELGA alohida (bepul tarifda ~10 so'rov/kun).
+# Bir model 429 bersa — keyingi modelga o'tiladi. 4 kalit x 4 model = 16 kombinatsiya.
+GEMINI_TTS_MODELS: list[str] = [
+    m.strip() for m in (
+        os.getenv("GEMINI_TTS_MODEL", "gemini-3.8-flash-tts"),
+        "gemini-3.8-flash-lite-tts",
+        "gemini-3.1-flash-tts-preview",
+        "gemini-2.5-flash-preview-tts",
+    ) if m.strip()
+]
+
 # --- Fish Audio TTS (OpenRouter) — fallback sifatida saqlanadi ---
 TTS_API_URL = "https://openrouter.ai/api/v1/audio/speech"
 TTS_MODEL = "fish-audio/s2.1-pro-free:free"
@@ -948,9 +959,9 @@ def pcm_to_wav(pcm: bytes, sample_rate: int = 24000, channels: int = 1) -> bytes
     return header + pcm
 
 
-async def _gemini_tts_one_key(text: str, voice: str, key: str) -> bytes | None:
+async def _gemini_tts_one_key(text: str, voice: str, key: str, model: str) -> bytes | None:
     """Bitta kalit bilan Gemini TTS chaqiruvi (ichki yordamchi)."""
-    url = f"{GEMINI_BASE_URL}/{GEMINI_TTS_MODEL}:generateContent?key={key}"
+    url = f"{GEMINI_BASE_URL}/{model}:generateContent?key={key}"
     payload = {
         "contents": [{"parts": [{"text": text}]}],
         "generationConfig": {
@@ -969,7 +980,7 @@ async def _gemini_tts_one_key(text: str, voice: str, key: str) -> bytes | None:
         ) as resp:
             if resp.status != 200:
                 body = (await resp.text())[:200]
-                logger.error(f"Gemini TTS xatosi {resp.status} (kalit {key[:14]}...): {body}")
+                logger.error(f"Gemini TTS xatosi {resp.status} ({model}, kalit {key[:14]}...): {body}")
                 return None
 
             data = await resp.json()
@@ -999,35 +1010,41 @@ async def _gemini_tts_one_key(text: str, voice: str, key: str) -> bytes | None:
 async def gemini_tts(text: str, voice: str = "Kore", lang: str = "uz") -> bytes | None:
     """Gemini Flash TTS — faqat Gemini (boshqa hech qanday zaxira yo'q).
 
-    4 ta API kalit bilan ishlaydi: birinchisi ishlamasa (429 kvota / 500 /
-    tarmoq xatosi) — keyingisiga o'tadi. Barchasi ishlamasa — None.
+    4 ta API kalit x 4 ta TTS model = 16 kombinatsiya navbat bilan sinab
+    ko'riladi. Bepul tarifda kvota HAR BIR MODELGA alohida (~10 so'rov/kun),
+    shuning uchun 4 model = ~40+ so'rov/kun, 4 kalit bilan esa ko'proq.
+    Bitta kalit/model 429 (kvota) yoki xato bersa — keyingisiga o'tadi.
+    Barchasi ishlamasa — None.
     """
     if not GEMINI_TTS_KEYS or not GEMINI_TTS_ENABLED:
         return None
 
-    for i, key in enumerate(GEMINI_TTS_KEYS, 1):
-        # Bu kalit qisqa muddat "buzilgan" deb belgilangan bo'lsa — o'tkazamiz
-        if _key_broken(f"gemini{i}"):
-            continue
-        try:
-            audio = await _gemini_tts_one_key(text, voice, key)
-        except Exception as e:
-            logger.error(
-                f"Gemini TTS xatosi (kalit {i}/{len(GEMINI_TTS_KEYS)}): "
-                f"{type(e).__name__}: {str(e)[:150]}"
-            )
-            audio = None
+    for model in GEMINI_TTS_MODELS:
+        for i, key in enumerate(GEMINI_TTS_KEYS, 1):
+            # Bu (kalit, model) juftligi qisqa muddat "buzilgan" bo'lsa — o'tkazamiz
+            tag = f"gemini{i}_{model}"
+            if _key_broken(tag):
+                continue
+            try:
+                audio = await _gemini_tts_one_key(text, voice, key, model)
+            except Exception as e:
+                logger.error(
+                    f"Gemini TTS xatosi ({model}, kalit {i}): "
+                    f"{type(e).__name__}: {str(e)[:120]}"
+                )
+                audio = None
 
-        if audio:
-            if i > 1:
-                logger.info(f"Gemini TTS: kalit {i} ishladi (kalitlar {i-1} ishlamadi)")
-            return audio
+            if audio:
+                if i > 1 or model != GEMINI_TTS_MODELS[0]:
+                    logger.info(f"Gemini TTS: {model} + kalit {i} ishladi")
+                return audio
 
-        # Muvaffaqiyatsiz — bu kalitni qisqa muddatga "buzilgan" qilamiz,
-        # keyingi chaqiruvda yo'qotilgan vaqtsiz keyingi kalitga o'tamiz
-        _mark_broken(f"gemini{i}", ttl=60)
+            # Muvaffaqiyatsiz — (kalit, model) juftligini 60s ga "buzilgan" qilamiz,
+            # keyingi chaqiruvda yo'qotilgan vaqtsiz keyingisiga o'tamiz
+            _mark_broken(tag, ttl=60)
 
-    logger.error("Gemini TTS: barcha 4 kalit ishlamadi — ovoz yaratib bo'lmadi")
+    logger.error("Gemini TTS: barcha kalit+model kombinatsiyalari ishlamadi")
+    return None
     return None
 
 
